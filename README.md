@@ -21,7 +21,7 @@ user: 'root',
 password: 'root',
 database: 'order_management_system'
 
-Commands to create required dba nd required table
+Commands to create required db and required table
 
 1)create database order_management_system;
 2)use order_management_system;
