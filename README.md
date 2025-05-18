@@ -13,3 +13,10 @@ Steps to run the project:
 Admin credentials:
 username:admin
 password:admin
+
+
+MYSQL Credentials:
+host: 'localhost',
+user: 'root',
+password: 'root',
+database: 'order_management_system'
