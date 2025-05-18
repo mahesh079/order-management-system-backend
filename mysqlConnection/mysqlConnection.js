@@ -21,12 +21,12 @@ const initialKnex = knexLib({
   },
 });
 
-const knex = knexLib(dbConfig); // define knex normally for use and export
+const knex = knexLib(dbConfig);
 
 // Ensure database and table (only once on server start)
 initialKnex.raw('CREATE DATABASE IF NOT EXISTS order_management_system')
   .then(() => {
-    console.log('✅ Database ensured');
+    console.log('Database ensured');
 
     // Check and create table if needed
     return knex.schema.hasTable('orders').then((exists) => {
@@ -42,15 +42,15 @@ initialKnex.raw('CREATE DATABASE IF NOT EXISTS order_management_system')
           table.string('productImage', 500).notNullable();
           table.timestamp('createdAt').defaultTo(knex.fn.now());
         }).then(() => {
-          console.log('✅ Table "orders" created');
+          console.log('Table "orders" created');
         });
       } else {
-        console.log('ℹ️ Table "orders" already exists');
+        console.log('ℹTable "orders" already exists');
       }
     });
   })
   .catch((err) => {
-    console.error('❌ Error ensuring DB or table:', err);
+    console.error('Error ensuring DB or table:', err);
   });
 
 module.exports = knex; 
