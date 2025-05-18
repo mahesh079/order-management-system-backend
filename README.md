@@ -22,5 +22,5 @@ password: 'root',
 database: 'order_management_system'
 
 
-
+Note:
 If you want to change the databse configuration then you can change it in the mysqlConnection.js file in the backend folder
