@@ -9,22 +9,18 @@ const { verifyToken } = require('../middlewares/authentication');
 // Setting router
 let router = express.Router();
 
-router.post('/admin-login', (req, res, next) => {
+router.post('/admin-login', (req, res) => {
   const { username, password } = req.body;
 
-  try {
-    if (username === 'admin' && password === 'admin') {
-      // Generate JWT
-      const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
+  // Dummy admin check
+  if (username === 'admin' && password === 'admin') {
+    // Generate JWT
+    const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '1h' });
 
-      return res.status(200).json({ message: 'Login successful', token });
-    }
-  } catch (error) {
-    console.error('Error during admin login:', error.message);
-    next(error);
+    return res.status(200).json({ message: 'Login successful', token });
   }
 
-
+  return res.status(401).json({ error: 'Invalid credentials' });
 });
 
 router.get('/admin-dashboard', verifyToken, (req, res) => {
