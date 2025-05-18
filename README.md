@@ -20,3 +20,21 @@ host: 'localhost',
 user: 'root',
 password: 'root',
 database: 'order_management_system'
+
+Commands to create required dba nd required table
+
+1)create database order_management_system;
+2)use order_management_system;
+3)CREATE TABLE orders (
+    id INT NOT NULL AUTO_INCREMENT,
+    customerName VARCHAR(30) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    contactNumber CHAR(10) NOT NULL,
+    address VARCHAR(100) NOT NULL,
+    productName VARCHAR(50) NOT NULL,
+    quantity INT NOT NULL,
+    productImage VARCHAR(500) NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id)
+);
+
