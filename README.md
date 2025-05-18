@@ -38,4 +38,4 @@ Commands to create required dba nd required table
     PRIMARY KEY (id)
 );
 
-If you want to change the databse configuration then you can change it in the mysqlConnection.js file
+If you want to change the databse configuration then you can change it in the mysqlConnection.js file in the backend folder
