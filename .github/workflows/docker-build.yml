@@ -3,11 +3,14 @@ name: Test & Build (strict local, no push)
 on:
   push:
     branches: [ "master" ]
+  # pull_request:            # (optional) PRs par bhi chalाना हो तो uncomment करें
+  #   branches: [ "master" ]
+  # workflow_dispatch: {}    # (optional) manual run
 
 env:
   APP_DIR: .
   DOCKERFILE_PATH: ./Dockerfile
-  IMAGE_NAME: express-app   # local tag (koi registry hostname nahi)
+  IMAGE_NAME: express-app   # local tag (registry hostname mat do)
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,28 +20,40 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: '${{ env.APP_DIR }}/package-lock.json'
+
       - name: Install deps
         working-directory: ${{ env.APP_DIR }}
         run: npm ci
-      - name: Run tests
+
+      - name: Run tests (skip if no real test script)
         working-directory: ${{ env.APP_DIR }}
         env:
           CI: true
-        run: npm test --if-present
+        run: |
+          TEST_SCRIPT=$(node -e "const p=require('./package.json'); console.log((p.scripts && p.scripts.test) || '')")
+          if [ -z "$TEST_SCRIPT" ] || echo "$TEST_SCRIPT" | grep -qi 'no test specified'; then
+            echo "No real test script found. Skipping tests."
+            exit 0
+          fi
+          npm test --silent
 
   build:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      # ❗ Use Docker daemon driver (not buildx container). Is mode me push/multi-arch/manifest-list nahi hota.
+      # ❗ Docker daemon driver use karo: is mode me multi-arch/manifest/push attempt nahi hota
       - name: Set up Docker Buildx (daemon driver)
         uses: docker/setup-buildx-action@v3
         with:
@@ -49,9 +64,9 @@ jobs:
         with:
           context: ${{ env.APP_DIR }}
           file: ${{ env.DOCKERFILE_PATH }}
-          push: false            # safeguard
+          push: false            # safety: registry par kabhi push na kare
           load: true             # image runner ke local Docker me load hogi
           # platforms: mat do; daemon driver single-arch local build karta hai
-          provenance: false      # attestation off
+          provenance: false      # attestation off (remote export avoid)
           sbom: false            # SBOM export off
           tags: ${{ env.IMAGE_NAME }}:ci-${{ github.sha }}
