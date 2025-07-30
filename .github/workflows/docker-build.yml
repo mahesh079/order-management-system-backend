@@ -1,4 +1,4 @@
-name: Test & Build (no push)
+name: Test & Build (strict local, no push)
 
 on:
   push:
@@ -7,7 +7,11 @@ on:
 env:
   APP_DIR: .
   DOCKERFILE_PATH: ./Dockerfile
-  IMAGE_NAME: express-app  # local tag, registry nahi
+  IMAGE_NAME: express-app   # local tag (koi registry hostname nahi)
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
@@ -19,30 +23,35 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: '${{ env.APP_DIR }}/package-lock.json'
-      - name: Install
+      - name: Install deps
         working-directory: ${{ env.APP_DIR }}
         run: npm ci
-      - name: Test
+      - name: Run tests
         working-directory: ${{ env.APP_DIR }}
         env:
           CI: true
         run: npm test --if-present
 
- build:
+  build:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
 
-      - name: Build image (strictly local, no push)
+      # ❗ Use Docker daemon driver (not buildx container). Is mode me push/multi-arch/manifest-list nahi hota.
+      - name: Set up Docker Buildx (daemon driver)
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker
+
+      - name: Build image (local only, no push)
         uses: docker/build-push-action@v6
         with:
           context: ${{ env.APP_DIR }}
           file: ${{ env.DOCKERFILE_PATH }}
-          platforms: linux/amd64   # ❗ single-platform → manifest list/push ki zaroorat nahi
-          push: false              # ✅ no push
-          load: true               # ✅ runner par image load ho jayegi
-          provenance: false        # 🔇 attestation/remote needs ko disable
-          sbom: false              # 🔇 SBOM export disable
+          push: false            # safeguard
+          load: true             # image runner ke local Docker me load hogi
+          # platforms: mat do; daemon driver single-arch local build karta hai
+          provenance: false      # attestation off
+          sbom: false            # SBOM export off
           tags: ${{ env.IMAGE_NAME }}:ci-${{ github.sha }}
