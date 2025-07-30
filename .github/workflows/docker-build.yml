@@ -1,10 +1,9 @@
-name: Test, Build image with name (v1, v2, v3…)
+name: Test, Build & Push (v1, v2, v3)
 
 on:
   push:
     branches: [ "master" ]
 
-# Git tag push karne ke liye zaroori
 permissions:
   contents: write
 
@@ -27,9 +26,9 @@ jobs:
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: '${{ env.APP_DIR }}/package-lock.json'
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: "${{ env.APP_DIR }}/package-lock.json"
 
       - name: Install deps
         working-directory: ${{ env.APP_DIR }}
@@ -54,9 +53,8 @@ jobs:
       - name: Checkout (with tags)
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # tags read karne ke liye
+          fetch-depth: 0
 
-      # Find next version: v1 -> v2 -> v3 ...
       - name: Compute next version tag
         id: ver
         shell: bash
@@ -68,7 +66,6 @@ jobs:
           else
             NUM=${LAST#v}
             if ! [[ "$NUM" =~ ^[0-9]+$ ]]; then
-              echo "Last tag '$LAST' not numeric; defaulting to v1"
               NEXT="v1"
             else
               NEXT="v$((NUM+1))"
@@ -77,16 +74,16 @@ jobs:
           echo "next=$NEXT" >> "$GITHUB_OUTPUT"
           echo "Next version: $NEXT"
 
-      # (Optional) Create & push the git tag so history stays in repo
       - name: Create & push git tag
         run: |
-          git config user.name  "github-actions[bot]"
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag ${{ steps.ver.outputs.next }}
           git push origin ${{ steps.ver.outputs.next }}
 
-      - name: Docker logout (clean) & login
+      - name: Docker logout (clean)
         run: docker logout docker.io || true
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -104,7 +101,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ${{ env.APP_DIR }}
-          file: ${{ env.DOCKERFILE_PATH }}
+          file: ${{ env.DO  C KERFILE_PATH }}
           platforms: linux/amd64
           push: true
           provenance: false
