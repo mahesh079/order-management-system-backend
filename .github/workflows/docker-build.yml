@@ -119,4 +119,4 @@ jobs:
 
       # (Optional) Print digest for deploy-by-digest
       - name: Show digest
-        run: echo "Digest: ${{ steps.bp.outputs.digest }}"
+        run: echo "Digest:${{ steps.bp.outputs.digest }}"
