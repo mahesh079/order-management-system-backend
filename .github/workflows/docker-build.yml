@@ -40,5 +40,4 @@ jobs:
           context: ${{ env.APP_DIR }}
           file: ${{ env.DOCKERFILE_PATH }}
           push: false           # 🔴 make sure false hai
-          load: true            # optional: image runner ke local Docker me load ho jayega
           tags: ${{ env.IMAGE_NAME }}:ci-${{ github.sha }}
