@@ -108,8 +108,8 @@ jobs:
           provenance: false
           sbom: false
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ steps.ver.outputs.next }}
             ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.ver.outputs.next }}
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
             org.opencontainers.image.revision=${{ github.sha }}
