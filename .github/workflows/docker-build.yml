@@ -109,7 +109,6 @@ jobs:
           sbom: false
           tags: |
             ${{ env.IMAGE_NAME }}:${{ steps.ver.outputs.next }}
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.IMAGE_NAME }}:latest
           labels: |
             org.opencontainers.image.source=${{ github.repository }}
