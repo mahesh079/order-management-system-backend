@@ -28,16 +28,21 @@ jobs:
           CI: true
         run: npm test --if-present
 
-  build:
+ build:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-buildx-action@v3
-      - name: Build image (no push)
+
+      - name: Build image (strictly local, no push)
         uses: docker/build-push-action@v6
         with:
           context: ${{ env.APP_DIR }}
           file: ${{ env.DOCKERFILE_PATH }}
-          push: false           # 🔴 make sure false hai
+          platforms: linux/amd64   # ❗ single-platform → manifest list/push ki zaroorat nahi
+          push: false              # ✅ no push
+          load: true               # ✅ runner par image load ho jayegi
+          provenance: false        # 🔇 attestation/remote needs ko disable
+          sbom: false              # 🔇 SBOM export disable
           tags: ${{ env.IMAGE_NAME }}:ci-${{ github.sha }}
