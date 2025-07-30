@@ -1,8 +1,8 @@
-name: Test, Build & Push (v1, v2, v3)
+name: CI Build & Push (v1, v2, v3)
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
 
 permissions:
   contents: write
@@ -59,16 +59,17 @@ jobs:
         id: ver
         shell: bash
         run: |
+          set -e
           git fetch --tags --force
           LAST=$(git tag -l 'v[0-9]*' --sort=-v:refname | head -n1)
           if [ -z "$LAST" ]; then
             NEXT="v1"
           else
             NUM=${LAST#v}
-            if ! [[ "$NUM" =~ ^[0-9]+$ ]]; then
-              NEXT="v1"
-            else
+            if [[ "$NUM" =~ ^[0-9]+$ ]]; then
               NEXT="v$((NUM+1))"
+            else
+              NEXT="v1"
             fi
           fi
           echo "next=$NEXT" >> "$GITHUB_OUTPUT"
@@ -78,8 +79,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag ${{ steps.ver.outputs.next }}
-          git push origin ${{ steps.ver.outputs.next }}
+          git tag ${{ steps.ver.outputs.next }} || true
+          git push origin ${{ steps.ver.outputs.next }} || true
 
       - name: Docker logout (clean)
         run: docker logout docker.io || true
@@ -101,7 +102,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ${{ env.APP_DIR }}
-          file: ${{ env.DO  C KERFILE_PATH }}
+          file: ${{ env.DOCKERFILE_PATH }}
           platforms: linux/amd64
           push: true
           provenance: false
@@ -115,4 +116,4 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
 
       - name: Show digest
-        run: echo "Digest: ${{ steps.bp.outputs.digest }}"
+        run: echo "Digest=${{ steps.bp.outputs.digest }}"
